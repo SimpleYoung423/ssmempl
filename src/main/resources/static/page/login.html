@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>登录</title>
+    <!--<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">-->
+    <link rel="stylesheet" href="../lib/element-ui/element-ui.css">
+    <link rel="stylesheet" href="../lib/bootstrap-3.3.7/css/bootstrap.css">
+    <link rel="stylesheet" href="../lib/font-awesome-4.7.0/css/font-awesome.css">
+    <!--<link rel="stylesheet" href="../lib/layui-2.4.5/css/layui.css">-->
+
+    <style>
+        body {
+            /*background-image: url("../img/bg-01.jpg");*/
+            /*background-image: linear-gradient(25deg, #9261f8, #848fed, #67b7e1, #0bdcd4);*/
+            background-image: linear-gradient(25deg, #7068e1, #878dc5, #91b2a8, #90d787);
+            background-repeat: no-repeat;
+            background-size: 100%;
+            height: 969px;
+        }
+
+        .wrap {
+
+            width: 480px;
+            height: 550px;
+
+            background-color: #ffffff;
+            margin-top: 50%;
+            padding-top: 50px;
+            padding-left: 40px;
+            padding-right: 50px;
+            border-radius: 15px;
+        }
+
+
+       .fa-user,.fa-lock{
+           margin-left: 5px;
+
+       }
+        .el-form-item__label{
+
+            font-size: 19px;
+        }
+        .el-input__inner{
+            font-size: 19px;
+        }
+
+    </style>
+</head>
+
+<body>
+
+
+<el-container id="app" class="container">
+
+    <el-row type="flex" justify="center" align="center">
+
+        <el-col :span="16" :push="12">
+
+            <div class="wrap">
+
+                <div style="text-align: center;margin-bottom: 20px">
+
+                    <h1>登录</h1>
+                </div>
+
+                <el-form label-position="top" label-width="80px">
+
+                    <el-form-item label="用户名">
+                        <el-input v-model="userAccount" type="text" clearable placeholder="请输入用户名">
+                            <i slot="prefix" class="fa fa-user"></i>
+                        </el-input>
+                    </el-form-item>
+
+                    <el-form-item label="密码">
+                        <el-input v-model="password" prefix-icon="" type="password" placeholder="请输入密码" show-password>
+                            <i slot="prefix" class="fa fa-lock"></i>
+                        </el-input>
+                    </el-form-item>
+
+                    <el-form-item>
+                        <el-button  @click="submitForm" v-loading.body="loading" type="primary" round
+                                   style="width: 390px;margin-top: 22px">登录
+                        </el-button>
+                    </el-form-item>
+
+
+                </el-form>
+
+
+            </div>
+
+
+        </el-col>
+
+
+    </el-row>
+
+
+</el-container>
+
+
+</body>
+</html>
+<script src="../lib/jQuery-3.31/jquery-3.3.1.js"></script>
+<script src="../lib/layui-2.4.5/layui.all.js"></script>
+<script src="../lib/vue/vue.js"></script>
+<script src="../lib/element-ui/element-ui.js"></script>
+<script src="../lib/vue/axios-0.18.js"></script>
+
+<script>
+
+
+    var app = new Vue({
+
+        el: '#app',
+        data: {
+
+            userAccount: '',
+            password: '',
+
+            loading: false //是否开启login加载框
+
+        },
+        rules: {
+            // nameRule: [
+            //
+            //     {required: true, message: '请输入活动名称', trigger: 'blur'},
+            //     {min: 3, max: 5, message: '长度在 3 到 5 个字符', trigger: 'blur'}
+            // ],
+            // passwordRule: [
+            //     {required: true, message: '请输入活动名称', trigger: 'blur'}
+            // ]
+
+        },
+        methods: {
+
+
+            submitForm: function () {
+
+            // this.loading=true;
+                $.ajax({
+
+                    url: "/login",
+                    type: 'get',
+                    dataType: 'json',
+                    data: {"userAccount": this.userAccount, "password": this.password},
+                    contentType: "application/json; charset=utf-8",
+
+                    beforeSend: function () {
+
+                        app.loading = true
+
+                    },
+                    success: function (result) {
+
+                        if (result.success === false) {
+
+                            app.loading = false;
+                            app.$notify({
+                                title: '警告',
+                                message: result.msg,
+                                type: 'warning'
+                            });
+
+                        } else {
+                            app.$notify({
+                                title: '警告',
+                                message: result.msg,
+                                type: 'warning'
+                            });
+                            window.location.href=" /index";
+
+                            app.loading = false
+                        }
+
+
+                    },
+                    complete: function () {
+                        this.loading = false
+                    },
+
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+
+
+                    }
+
+
+                })
+            }
+
+            // submitForm: function(){
+            //
+            //     axios.get("/login", {"userAccount": this.userAccount, "password": this.password})
+            //         .then(
+            //             this.loading = false,
+            //             this.$notify({
+            //                 title: '警告',
+            //                 message: result.error,
+            //                 type: 'warning'
+            //             })
+            //         )
+            //         .catch(this.loading = false);
+            //
+            // }
+
+
+        }
+
+
+    })
+
+
+</script>

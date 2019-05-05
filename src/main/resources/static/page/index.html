@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>首页</title>
+    <link rel="stylesheet" href="../lib/bootstrap-3.3.7/css/bootstrap.css">
+
+    <link rel="stylesheet" href="../lib/font-awesome-4.7.0/css/font-awesome.css">
+    <link rel="stylesheet" href="../lib/element-ui/element-ui.css">
+
+    <style>
+
+        #aside {
+
+            transition: all 500ms;
+
+        }
+
+        #logo {
+            transition: all 500ms;
+
+        }
+
+        iframe{
+
+            width: 100%;
+            height: 748px;
+            border: 0px;
+            transition: all 500ms;
+        }
+
+
+    </style>
+</head>
+<body>
+
+<div id="app">
+
+
+    <el-container style="height: 969px;">
+
+        <!--侧边栏-->
+        <el-aside id="aside" style="background-color: rgb(238, 241, 246)">
+
+            <!--<el-radio-group v-model="isCollapse" style="margin-bottom: 20px;">-->
+            <!--<el-radio-button :label="false">展开</el-radio-button>-->
+            <!--<el-radio-button :label="true">收起</el-radio-button>-->
+            <!--</el-radio-group>-->
+
+
+            <el-header height="200px">
+
+                <div id="logo" @click.prevent="Switchollapse"
+                     style="border-radius: 350px;width: 150px;height: 150px;background-color: #2E2D3C;margin: 0px auto">
+                </div>
+            </el-header>
+
+
+            <el-menu :unique-opened="isOpened" :collapse="isCollapse" v-for="firstMenu in menuData ">
+
+                <!--&lt;!&ndash;====================================================&ndash;&gt;-->
+                <!--<el-submenu index="1" >-->
+
+                <!--<template slot="title" >-->
+                <!--<i class="el-icon-location"></i>-->
+                <!--<span slot="title">菜单一</span>-->
+                <!--</template> &lt;!&ndash;一级菜单&ndash;&gt;-->
+
+                <!--<el-menu-item-group>-->
+                <!--<el-menu-item index="1-1" @click="addTab('选项1')">选项1</el-menu-item>-->
+                <!--<el-menu-item index="1-2">选项2</el-menu-item>-->
+                <!--</el-menu-item-group>-->
+
+                <!--</el-submenu>-->
+                <!--&lt;!&ndash;====================================================&ndash;&gt;-->
+
+                <!--<el-submenu index="2">-->
+
+                <!--<template slot="title">-->
+                <!--<i class="el-icon-menu"></i>-->
+                <!--<span slot="title">菜单二</span>-->
+                <!--</template>-->
+                <!--<el-menu-item-group>-->
+
+                <!--<el-menu-item index="2-1" @click="addTab()">选项一</el-menu-item>-->
+                <!--<el-menu-item index="2-2"> 选项二</el-menu-item>-->
+
+                <!--</el-menu-item-group>-->
+
+
+                <!--</el-submenu>-->
+                <!--&lt;!&ndash;====================================================&ndash;&gt;-->
+
+                <!--<el-submenu index="3">-->
+
+                <!--<template slot="title">-->
+                <!--<i class="el-icon-edit"></i>-->
+                <!--<span slot="title">导航三</span>-->
+                <!--</template>-->
+
+                <!--</el-submenu>-->
+
+                <!--&lt;!&ndash;====================================================&ndash;&gt;-->
+                <!--<el-menu-item index="4">-->
+                <!--<i class="el-icon-setting"></i>-->
+                <!--<span slot="title">导航四</span>-->
+                <!--</el-menu-item>-->
+                <!--====================================================-->
+
+
+                <el-submenu>
+
+                    <template slot="title">
+                        <!--<i class="{firstMenu.icon}"></i>-->
+                        <!--<span v-html="firstMenu.icon"></span>-->
+                        <i :class="[iconClass]"></i>
+                        <span slot="title">{{firstMenu.funcName}}</span>
+                    </template> <!--一级菜单-->
+
+                    <el-menu-item-group v-for="secondMenu in firstMenu.childFunc">
+                        <el-menu-item
+                                @click="addTab(secondMenu.funcName,secondMenu.funcUrl,secondMenu.funcId)"
+                        >
+                            {{secondMenu.funcName}}
+                        </el-menu-item>
+                    </el-menu-item-group>
+
+                </el-submenu>
+            </el-menu>
+        </el-aside>
+
+
+        <el-container>
+
+            <!--头部-->
+            <el-header style="background-color: #cccccc " class="text-right">
+
+                <el-dropdown @command="handleCommand" trigger="click" style="position: relative;top: 20px;right: 20px;">
+                  <span class="el-dropdown-link ">
+                   <i class="fa fa-2x fa-cog"></i>
+                  </span>
+                    <el-dropdown-menu slot="dropdown">
+                        <el-dropdown-item command="info" icon="el-icon-edit">我的资料</el-dropdown-item>
+                        <el-dropdown-item command="setting" icon="el-icon-setting">设置</el-dropdown-item>
+                        <el-dropdown-item command="logout" icon="el-icon-error">退出</el-dropdown-item>
+                    </el-dropdown-menu>
+                </el-dropdown>
+
+
+            </el-header>
+
+            <!--主体-->
+            <el-main>
+
+                <!--<el-button @click="addTab()">add tab</el-button>-->
+
+                <el-tabs type="card"  v-model="activeTab" closable @tab-remove="removeTab"   >
+                    <el-tab-pane
+                            v-for="(item, index) in tabs"
+                            :key="item.name"
+                            :label="item.title"
+                            :name="item.name"
+                    >
+                        <!--{{item.content}}-->
+
+                        <iframe  :src="item.content" ></iframe>
+
+                    </el-tab-pane>
+
+                </el-tabs>
+
+
+            </el-main>
+
+            <el-footer style="background-color: #2E2D3C">
+
+            </el-footer>
+
+        </el-container>
+    </el-container>
+
+
+</div>
+</body>
+</html>
+
+<script src="../lib/jQuery-3.31/jquery-3.3.1.js"></script>
+<script src="../lib/layui-2.4.5/layui.all.js"></script>
+<script src="../lib/vue/vue.js"></script>
+<script src="../lib/element-ui/element-ui.js"></script>
+<script src="../lib/vue/axios-0.18.js"></script>
+
+<script>
+    // $(function () {
+    //     app.$notify({
+    //
+    //
+    //         title: '提示',
+    //         message: '登陆成功',
+    //         type: 'success',
+    //         offset: 60,
+    //         duration: 1500
+    //
+    //
+    //     })
+    // })
+
+
+    var app = new Vue({
+
+        el: "#app",
+        data: {
+            isCollapse: false,//菜单是否可以展开关闭
+            tabIndex: 2,
+            tabs: [
+                {
+                    title: '首页',
+                    name: '1',
+                    content: 'https://gradient.shapefactory.co/'
+                }
+            ],
+
+            isOpened: true, //是否只允许一个菜单下拉
+
+            iconClass: '',
+            menuData: {},
+            activeTab: '1',  //当前激活的tab
+
+
+        },
+        methods: {
+
+            addTab: function (funcName, funcUrl, funcId) {
+                if (JSON.stringify(this.tabs).indexOf(funcId) === -1){
+                this.tabs.push({
+                    title: funcName,
+                    name: funcId,
+                    content: funcUrl
+
+                });
+                }
+                this.activeTab = funcId;
+
+
+            },
+            removeTab(id) {
+
+                for (let i = 0; i < this.tabs.length; i++) {
+
+                    if (id==='1'){ //首页不能删除
+                        return;
+                    }
+
+                    if (this.tabs[i].name === id){ //当数组中的name等于传过来的值时
+
+                        this.tabs.splice(i,1);
+
+                        this.activeTab = this.tabs[i-1].name;   //激活左边元素
+                    }
+
+                }
+
+            },
+
+            Switchollapse: function () {
+
+                // this.isCollapse = !this.isCollapse;
+
+                if (this.isCollapse === true) {
+
+                    // $('#aside').css("width","65px");
+                    //  $('#logo').fadeOut(300);
+                    $('aside').css('width', '60px')
+                    this.isCollapse = false;
+                } else {
+
+                    // $('#logo').fadeIn(300);
+                    $('aside').css('width', '360px')
+
+                    this.isCollapse = true;
+                }
+
+
+            },
+
+            handleCommand: function (command) {
+
+                //点击“退出”时
+                if (command === "logout") {
+                    app.$msgbox({
+                        title: '消息',
+                        type: 'warning',
+                        message: '您确定退出系统吗?',
+                        showCancelButton: true,
+                        confirmButtonText: '确定',
+                        cancelButtonText: '取消',
+                        closeOnClickModal: false,
+                        roundButton: true,
+                        beforeClose: function (action, instance, done) {
+                            if (action === 'confirm') {
+                                app.logout();
+                            } else {
+                                done()
+                            }
+                        }
+                    })
+                }
+                if (command === "setting") {
+                    // app.$confirm('', '系统设置',
+                    //     {
+                    //         dangerouslyUseHTMLString: true,
+                    //         beforeClose: function (action, instance, done) {
+                    //             if (action === 'confirm') {
+                    //                 app.logout();
+                    //             } else {
+                    //                 done()
+                    //             }
+                    //         }
+                    //     });
+                    this.$confirm('<input />', '提示', {
+                        confirmButtonText: '确定',
+                        cancelButtonText: '取消',
+                        type: 'warning',
+                        dangerouslyUseHTMLString: true,
+                    }).then(() => {
+                        this.$message({
+                            type: 'success',
+                            message: '删除成功!'
+                        });
+                    }).catch(() => {
+                        this.$message({
+                            type: 'info',
+                            message: '已取消删除'
+                        });
+                    });
+                }
+
+
+            },
+
+            /**
+             * 退出的ajax请求
+             */
+            logout() {
+                $.ajax({
+                    url: "/logout",
+                    type: 'get',
+                    dataType: 'json',
+                    success: function (result) {
+                        if (result.success === true) {
+                            window.location.href = "/loginPage"
+                        }
+                    }
+
+                })
+
+            }
+
+
+        },
+
+        created: function () {
+            $.ajax({
+
+                url: "empl/funcTree",
+                type: 'get',
+                dataType: 'json',
+                success: function (result) {
+
+                    if (result.success === true) {
+
+                        app.menuData = result.data;
+
+                        app.$notify({
+
+                            title: "提示",
+                            message: result.msg,
+                            type: 'success'
+
+                        })
+                    }
+
+                }
+
+            });
+
+        }
+
+
+    })
+
+
+</script>

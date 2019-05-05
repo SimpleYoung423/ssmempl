@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>加班</title>
+    <link rel="stylesheet" href="../lib/font-awesome-4.7.0/css/font-awesome.css">
+    <link rel="stylesheet" href="../lib/element-ui/element-ui.css">
+
+    <style>
+        .el-input__count{
+
+            position: relative;
+            top: -34px;
+            left: 90%;
+
+        }
+
+    </style>
+</head>
+<body>
+<div id="app" v-loading="loading">
+
+
+    <el-row type="flex" justify="space-around">
+
+        <el-col :span=10>
+
+            <el-form label-width="100px" label-position="right" :ref="form">
+
+                <el-form-item label="申请人" prop="name">
+                    <el-input
+                            v-model="form.name"
+                            type="text"
+                            clearable
+                    ></el-input>
+                </el-form-item>
+
+                <el-form-item label="时间" >
+
+
+                    <el-date-picker
+                            v-model="form.time"
+                            type="daterange"
+                            range-separator="至"
+                            start-placeholder="开始日期"
+                            end-placeholder="结束日期" @blur="computeDate">
+                    </el-date-picker>
+
+                </el-form-item >
+
+                <el-form-item label="时长/天" prop="duration">
+
+<!--                    <el-input-number-->
+<!--                            v-model="form.duration"-->
+<!--                            :min="0.5"-->
+<!--                            :step="0.5"-->
+<!--                    ></el-input-number>-->
+<!--                    <span style="   display: inline-block; margin-left: -5px;">-->
+<!--                        <el-button type="primary">天</el-button>-->
+<!--                    </span>-->
+
+                    <el-slider
+                            v-model="form.duration"
+                            :step="0.5"
+                            :max="40"
+                            show-input
+                            show-input-controls
+                            input-size="mini"
+                    >
+                    </el-slider>
+                </el-form-item>
+
+
+            <el-form-item label="地点">
+                <el-select
+                        v-model="form.province"
+                        placeholder="请选择省份"
+                        filterable
+                        @focus="getProvince"
+                        @change="getCities"
+
+                > <!--省 -->
+
+                    <el-option
+                            v-for="province in provinceOptions"
+                            :key="province.id"
+                            :label="province.name"
+                            :value="province.provinceId"
+                    ></el-option>
+
+                </el-select>
+
+                <el-select
+                        v-model="form.city"
+                        placeholder="请选择城市"
+                > <!--市-->
+
+                    <el-option
+                            v-for="cities in citiesOptions"
+                            :key="cities.id"
+                            :label="cities.name"
+                            :value="cities.cityId"
+                    ></el-option>
+
+                </el-select>
+
+
+            </el-form-item>
+
+                <el-form-item label="备注" prop="desc">
+
+                    <el-input type="textarea"
+                              v-model="form.desc"
+                              :rows=5
+                              minlength="3"
+                              maxlength="100"
+                              show-word-limit
+                    ></el-input>
+
+                </el-form-item>
+
+                <el-form-item>
+                    <el-button type="primary" round @click="submitApply">提交</el-button>
+                    <el-button type="danger" round @click="resetForm">重置</el-button>
+                </el-form-item>
+            </el-form>
+
+        </el-col>
+        <el-col :span=10>
+            <el-transfer v-model="form.reviewer"
+                         :data="reviewerList"
+                         filterable
+                         :titles=['审核人列表','已选审核人']
+            ></el-transfer>
+
+        </el-col>
+    </el-row>
+
+
+</div>
+</body>
+</html>
+<script src="../lib/jQuery-3.31/jquery-3.3.1.js"></script>
+<script src="../lib/layui-2.4.5/layui.all.js"></script>
+<script src="../lib/vue/vue.js"></script>
+<script src="../lib/element-ui/elementUI-2.8.2.js"></script>
+
+
+
+<script>
+
+    const app = new Vue({
+
+        el: "#app",
+
+        data: {
+
+            form: {
+
+                province:'',
+                city:'',
+                time:'',
+                name: '',
+                duration: 0,
+                desc: '',
+                reviewer: [],
+
+            },
+            loading: false,
+            reviewerList: [],
+            provinceOptions:[],
+            citiesOptions: []
+        },
+
+        methods: {
+
+
+            /**
+             * 获取省数据
+             * */
+            getProvince: function () {
+
+                const isGetProvince = false;
+                if (isGetProvince === false) {
+
+                    $.ajax({
+                        url: "/regions/province",
+                        type: 'get',
+                        dataType: 'json',
+                        success: function (result) {
+                            if (result.success === true && isGetProvince === false) {
+
+                                app.provinceOptions = result.data;
+
+                                this.isGetProvince = true;
+                            }
+                        }
+                    });
+                }
+            },
+
+            /**
+             * 获得城市
+             *
+             * */
+            getCities: function (value) {
+
+                const isGetCities = false;
+                if (isGetCities === false) {
+
+                    $.ajax({
+
+                        url: "/regions/cities",
+                        type: "get",
+                        data: {"provinceId": value},
+                        dataType: "json",
+                        success: function (result) {
+
+                            if (result.success === true && isGetCities === false) {
+
+                                app.citiesOptions = result.data;
+                                this.isGetCities = true;
+
+                                app.form.cities = '';
+                                app.form.country = '';
+                            }
+                            if (result.success === false) {
+
+                                result.msg();
+                            }
+
+                        }
+
+                    })
+                }
+            },
+
+
+            /**
+             * 提交
+             *
+             **/
+
+            submitApply: function () {
+
+
+                let id = app.form.reviewer[0];
+
+
+                $.ajax({
+
+                    url: '/travel/submitApply',
+                    type: 'get',
+                    dataType: 'json',
+                    data: {
+                        'name': app.form.name,
+                        'startTime':app.form.time[0],
+                        'endTime': app.form.time[1],
+                        'provinceId':app.form.province,
+                        'cityId':app.form.city,
+                        'duration': app.form.duration,
+                        'desc': app.form.desc,
+                        'reviewerId': id
+                    },
+
+                    beforeSend: function(){
+
+                        app.loading = true
+                    },
+                    success: function (result) {
+
+                        if (result.success === true){
+
+                            app.$notify.success({
+                                title: '成功',
+                                message: result.msg,
+                            });
+                            app.loading = false;
+
+                        }else {
+                            app.$notify.error({
+                                title: '失败',
+                                message: result.msg,
+                            });
+                            app.loading = false;
+
+                        }
+
+                    }
+
+                })
+
+            },
+
+
+            /**
+             * 重置
+             * @param formName
+             */
+            resetForm: function() {
+
+                this.form.province='';
+                this.form.city='';
+                this.form.time='';
+                this.form.duration = 0;
+                this.form.desc= '';
+                this.form.reviewer=[];
+
+
+            },
+            /**
+             * 计算日期差
+             */
+            computeDate: function(){
+
+                let startMon = this.form.time[0].getMonth() +1;
+                let endMon = this.form.time[1].getMonth() +1 ;
+                let startDay = this.form.time[0].getDate();
+                let endDay = this.form.time[1].getDate();
+
+                if (startMon === endMon){
+
+                    let days = endDay - startDay;
+                    app.form.duration = days;
+                }else if (endMon - startMon === 1) { //相差一个月
+
+                    let monCountDays= new Date(app.form.time[0].getFullYear(),startMon,0).getDate();//获得月份总天数
+                    let days = monCountDays-startDay+endDay;
+                    app.form.duration = days;
+                }
+            }
+
+
+        },
+        created: function () {
+                $.ajax({
+
+                    url: '/const/getReviewer',
+                    type: 'get',
+                    dataType: 'json',
+                    success: function (result) {
+
+                        if (result.success === true) {
+                            // app.reviewerList = result.data;
+
+                            for (let data of result.data) {
+
+                                app.reviewerList.push({
+                                    key: data.userId,
+                                    label: data.name
+
+                                })
+                            }
+                        }
+
+                    }
+
+
+                });
+
+                $.ajax({
+
+                    url: '/const/getCurrentUsername',
+                    type: 'get',
+                    dataType: 'json',
+                    success: function (result) {
+
+                        app.form.name = result.data;
+
+                    }
+                });
+
+        }
+
+
+    })
+
+
+</script>

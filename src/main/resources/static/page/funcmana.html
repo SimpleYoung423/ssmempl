@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="../lib/font-awesome-4.7.0/css/font-awesome.css">
+    <link rel="stylesheet" href="../lib/element-ui/element-ui.css">
+    <style>
+        .custom-tree-node {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 14px;
+            padding-right: 8px;
+        }
+
+        /*.el-tree-node {*/
+
+        /*    margin: 10px 0;*/
+
+        /*}*/
+    </style>
+</head>
+<body>
+<div id="app" v-loading="loading">
+
+
+    <el-row type="flex" justify="space-around">
+
+        <el-col :span=10>
+
+            <el-tree
+                    :data="funcList"
+                    :props="props"
+                    show-checkbox
+                    default-expand-all>
+
+            </el-tree>
+
+            <!--            <el-tree :data="funcLIst" :props="props" show-checkbox default-expand-all="true"	>-->
+
+            <!--            <span class="custom-tree-node" node-key="funcId" slot-scope="{  node, data  }">-->
+            <!--        <span>{{ node.label }}</span>-->
+            <!--        <span>-->
+            <!--&lt;!&ndash;          <el-button type="primary" icon="el-icon-circle-plus" size="mini" circle @click="append(data)">&ndash;&gt;-->
+
+            <!--&lt;!&ndash;          </el-button>&ndash;&gt;-->
+            <!--             <el-button-->
+            <!--                     type="text"-->
+            <!--                     size="mini"-->
+            <!--                     @click="() => append(data)">-->
+            <!--            Append-->
+            <!--          </el-button>-->
+            <!--          <el-button type="danger" icon="el-icon-delete" size="mini" circle @click="remove(node, data)">-->
+
+            <!--          </el-button>-->
+            <!--        </span>-->
+            <!--      </span>-->
+            <!--            </el-tree>-->
+
+
+        </el-col>
+        <el-col :span=10>
+
+            <el-form :rules="rules" ref="form" label-position="right" label-width="100px">
+
+                <el-form-item label="菜单名称" prop="funcName">
+                    <el-input v-model="form.funcName"></el-input>
+                </el-form-item>
+
+
+                <el-form-item label="父菜单" prop="pid">
+                    <el-select v-model="form.pid" @change="getCurrFuncUrl">
+
+                        <el-option label="无" value="0">
+                            <span style="float: left">无</span>
+                            <span style="float: right;font-size: 8px">(创建一级菜单)</span>
+                        </el-option>
+                        <el-option
+                                v-for="item in funcList"
+                                :key="item.funcId"
+                                :value="item.funcId"
+                                :label="item.funcName"
+
+                        >
+
+                            <!--                            <span style="float: left">pid:{{ item.funcId }}</span>-->
+                            <!--                            <span style="float: right">{{ item.funcName }}</span>-->
+
+                        </el-option>
+
+                    </el-select>
+
+                </el-form-item>
+
+                <el-form-item label="url地址" prop="url">
+                    <el-input v-model="form.url">
+                        <template slot="prepend">{{preText}}/</template>
+                    </el-input>
+                </el-form-item>
+
+                <el-form-item label="是否子菜单" prop="funcLevel">
+
+                    <el-switch
+                            active-text="是"
+                            inactive-text="否"
+                            v-model="form.funcLevel">
+                    </el-switch>
+
+                </el-form-item>
+
+                <el-form-item label="排序" prop="order">
+
+                    <el-input-number
+                            v-model="form.order"
+
+                            :min="1" :max="10"
+                            label="描述文字"
+                    ></el-input-number>
+
+                </el-form-item>
+
+
+                <el-form-item>
+
+                    <el-button type="primary" round @click="submitForm">提交</el-button>
+                    <el-button type="danger" round @click="resetForm">重置</el-button>
+                </el-form-item>
+
+            </el-form>
+
+        </el-col>
+    </el-row>
+
+</div>
+</body>
+</html>
+<script src="../lib/jQuery-3.31/jquery-3.3.1.js"></script>
+<script src="../lib/vue/vue.js"></script>
+<script src="../lib/element-ui/elementUI-2.8.2.js"></script>
+
+<script>
+
+    const app = new Vue({
+
+        el: '#app',
+        data: {
+
+            form: {
+                funcName: '',
+                url: '',
+                pid: '',
+                funcLevel: false,
+                order: '1'
+            },
+
+
+            preText: '',
+            loading: false,
+            funcList: [],
+            props: {
+                label: 'funcName',
+                children: 'childFunc'
+            },
+
+
+            rules: {
+
+                funcName: [
+                    // {required: true, message: "菜单名不能为空", trigger: 'blur'}
+                ],
+                pid: [
+                    {
+                        validator: function (rule, value, callback) {
+
+                            if (app.form.pid === '') {
+
+                                callback(new Error("父菜单不能为空"))
+                            } else {
+                                callback()
+                            }
+                        }, trigger: 'blur'
+                    }
+                ],
+                url: [
+
+                    {
+                        validator: function (rule, value, callback) {
+                            let thisvalue = app.preText +"/"+ app.form.url;
+
+                            for (let func of app.funcList) {
+
+                                for (let child of func.childFunc) {
+
+                                    if (thisvalue === child.funcUrl) {
+
+                                        callback(new Error("已有该URL地址的菜单，菜单名字为[" + child.funcName+"]"));
+                                        return
+                                    } else {
+                                        callback();
+                                    }
+                                }
+                            }
+
+                        },trigger: 'blur'
+                    },
+                    // {required: true, message: "URL地址不能为空", trigger: 'blur'}
+                ]
+
+
+            }
+
+
+        },
+
+        methods: {
+            append: function (data) {
+
+
+                console.log(data);
+
+            },
+
+            remove: function (node, data) {
+
+                console.log(node);
+
+            },
+
+            submitForm: function () {
+
+                $.ajax({
+
+                    url: '/system/addFunc',
+                    type: 'get',
+                    data: {
+                        'funcName': app.form.funcName,
+                        'funcUrl': '/'+app.form.url,
+                        'funcLevel': app.form.funcLevel ? '2' : '1',
+                        'pid': app.form.pid,
+                        'order': app.form.order
+                    },
+                    dataType: 'json',
+                    success: function (result) {
+
+                        if (result.success === true) {
+
+                            app.$notify.success({
+
+                                title: '成功',
+                                message: result.msg
+
+                            });
+
+                            getMenu();
+
+                        }else {
+
+                            app.$notify.error({
+                                title: '错误',
+                                message:'添加失败'
+                            })
+                        }
+
+                    }
+                })
+
+            },
+            resetForm: function () {
+
+            },
+
+            getCurrFuncUrl: function () {
+
+                let pid = this.form.pid;
+
+                for (let func of app.funcList) {
+
+                    if (func.funcId === pid) {
+                        app.preText = func.funcUrl;
+                        return;
+                    }
+
+                }
+
+            }
+
+
+        },
+
+        created: getMenu()
+
+
+    })
+
+    function getMenu() {
+        $.ajax({
+
+            url: "/empl/funcTree",
+            type: 'get',
+            dataType: 'json',
+            success: function (result) {
+
+                if (result.success === true) {
+
+                    app.funcList = result.data;
+
+                    app.$notify({
+
+                        title: "提示",
+                        message: result.msg,
+                        type: 'success'
+
+                    })
+                }
+
+            }
+
+        });
+
+    }
+
+    // $(getMenu())
+
+</script>

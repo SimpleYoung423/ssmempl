@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>加班</title>
+    <link rel="stylesheet" href="../lib/font-awesome-4.7.0/css/font-awesome.css">
+    <link rel="stylesheet" href="../lib/element-ui/element-ui.css">
+
+    <style>
+        .el-input__count{
+
+            position: relative;
+            top: -34px;
+            left: 90%;
+
+        }
+
+    </style>
+</head>
+<body>
+<div id="app" v-loading="loading">
+
+
+    <el-row type="flex" justify="space-around">
+
+        <el-col :span=10>
+
+            <el-form label-width="80px" label-position="right" :ref="form">
+
+                <el-form-item label="申请人" prop="name">
+                    <el-input
+                            v-model="form.name"
+                            type="text"
+                            clearable
+                    ></el-input>
+                </el-form-item>
+
+                <el-form-item label="日期" prop="date">
+
+                    <el-date-picker
+                            v-model="form.date"
+                            clearable
+                            placeholder="请选择日期"
+                            :default-value="today"
+                            value-format="yyyy-MM-dd"
+                            type="date">
+
+
+                    </el-date-picker>
+
+                </el-form-item>
+
+                <el-form-item label="时间" prop="startTime">
+
+
+                    <el-time-select
+                            v-model="form.startTime"
+                            clearable
+                            placeholder="选择开始时间"
+                            :picker-options="{
+                              start: '19:30',
+
+                              end: '23:30',
+                              maxTime: form.endTime
+                            }">
+
+                    </el-time-select>
+
+                    <span><i class="fa fa-minus"></i></span>
+
+                    <el-time-select
+                            v-model="form.endTime"
+                            clearable
+                            placeholder="选择结束时间"
+                            :picker-options="{
+                            start: '20:00',
+
+                            end: '23:00',
+                            minTime:form.startTime
+                            }"
+
+                    >
+
+                    </el-time-select>
+
+
+                </el-form-item >
+
+                <el-form-item label="时长" prop="duration">
+
+                    <el-input-number
+                            v-model="form.duration"
+                            :min="0.5"
+                            :max="4"
+                            :step="0.5"
+                    ></el-input-number>
+
+                </el-form-item>
+
+
+                <el-form-item label="法定节日" prop="isFestival">
+
+                    <el-switch
+                            active-text="是"
+                            inactive-text="否"
+                            v-model="form.isFestival"
+                    ></el-switch>
+
+                </el-form-item>
+
+                <el-form-item label="备注" prop="desc">
+
+                    <el-input type="textarea"
+                              v-model="form.desc"
+                              :rows=5
+                              minlength="3"
+                              maxlength="100"
+                              show-word-limit
+                    ></el-input>
+
+                </el-form-item>
+
+                <el-form-item>
+                    <el-button type="primary" round @click="submitApply">提交</el-button>
+                    <el-button type="danger" round @click="resetForm">重置</el-button>
+                </el-form-item>
+            </el-form>
+
+        </el-col>
+        <el-col :span=10>
+            <el-transfer v-model="form.reviewer"
+                         :data="reviewerList"
+                         filterable
+                         :titles=['审核人列表','已选审核人']
+            ></el-transfer>
+
+        </el-col>
+    </el-row>
+
+
+</div>
+</body>
+</html>
+<script src="../lib/jQuery-3.31/jquery-3.3.1.js"></script>
+<script src="../lib/layui-2.4.5/layui.all.js"></script>
+<script src="../lib/vue/vue.js"></script>
+<script src="../lib/element-ui/elementUI-2.8.2.js"></script>
+
+
+
+<script>
+
+    const app = new Vue({
+
+        el: "#app",
+
+        data: {
+
+            form: {
+
+                name: '',
+                date: '',
+                startTime: '',
+                endTime: '',
+                isFestival: false,
+                duration: '',
+                desc: '',
+                reviewer: [],
+
+            },
+            today: '',
+            loading: false,
+            reviewerList: []
+        },
+
+        methods: {
+
+
+            /**
+             * 提交
+             *
+             **/
+
+            submitApply: function () {
+
+
+                let id = app.form.reviewer[0];
+
+
+                $.ajax({
+
+                    url: '/overtime/submitApply',
+                    type: 'get',
+                    dataType: 'json',
+                    data: {
+                        'name': app.form.name,
+                        'date': app.form.date,
+                        'sTime': app.form.startTime,
+                        'eTime': app.form.endTime,
+                        'duration': app.form.duration,
+                        'festival': app.form.isFestival ? '1' : '2',
+                        'desc': app.form.desc,
+                        'reviewerId': id
+                    },
+
+                    beforeSend: function(){
+
+                      app.loading = true
+                    },
+                    success: function (result) {
+
+                        if (result.success === true){
+
+                            app.$notify.success({
+                                title: '成功',
+                                message: result.msg,
+                            });
+                            app.loading = false;
+
+                        }else {
+                            app.$notify.error({
+                                title: '失败',
+                                message: result.msg,
+                            });
+                            app.loading = false;
+
+                        }
+
+                    }
+
+                })
+
+
+
+            },
+
+
+            /**
+             * 重置
+             * @param formName
+             */
+            resetForm: function() {
+
+                this.form.date='';
+                this.form.startTime = '';
+                this.form.endTime = '';
+                this.form.duration = '';
+                this.form.isFestival = false;
+                this.form.desc= '';
+
+
+
+            },
+
+
+
+
+        },
+        created: function () {
+
+
+            $.ajax({
+
+                url: '/const/getReviewer',
+                type: 'get',
+                dataType: 'json',
+                success: function (result) {
+
+                    if (result.success === true) {
+
+
+                        // app.reviewerList = result.data;
+
+
+                        for (let data of result.data) {
+
+                            app.reviewerList.push({
+                                key: data.userId,
+                                label: data.name
+
+                            })
+                        }
+                    }
+
+                }
+
+
+            });
+
+            $.ajax({
+
+                url: '/const/getCurrentUsername',
+                type: 'get',
+                dataType: 'json',
+                success: function (result) {
+
+                    app.form.name = result.data;
+
+                }
+
+
+            });
+
+
+        }
+
+
+    })
+
+
+</script>

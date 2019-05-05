@@ -1,0 +1,71 @@
+
+
+#===============Druid加密生成的密码===========
+#密码
+password: ed2IeC5oFiM0kFtwBbKFhOZUIhdDSZj8fGhIJ/ADRh5lvnUbzAkY5eWX2uX8NmJAfQRdrD4Rk3xYmkfhyQAV+g==
+
+#公钥
+publicKey: MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAL6pRszWZneUt2RHIvwglToXFyuHR7XWGuGArtZzZuaLq4HIAIMRoNe61YTaNFOSwWByL1asnaEIT5gKT6gP4jECAwEAAQ==
+#==========================================
+
+spring:
+
+  datasource:
+    url: jdbc:mysql://47.106.168.17:3306/emplMana
+    username: yxp423
+    password: 19960423
+#    url: jdbc:mysql://127.0.0.1:3306/emplMana?characterEncoding=utf8&useSSL=true
+#    username: root
+#    password: 123456
+
+    driver-class-name: com.mysql.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+
+
+#======druid数据源配置========================
+    initialSize: 5
+    minIdle: 5
+    maxActive: 20
+    maxWait: 60000
+    timeBetweenEvictionRunsMillis: 60000
+    minEvictableIdleTimeMillis: 300000
+    validationQuery: SELECT 1 FROM DUAL
+    testWhileIdle: true
+    testOnBorrow: false
+    testOnReturn: false
+    poolPreparedStatements: true
+#    配置监控统计拦截的filters，去掉后监控界面sql无法统计，“wall”用于防火墙
+    filters: stat,wall,log4j
+    maxPoolPreparedStatementPerConnectionSize: 20
+    useGlobalDataSourceStat: true
+#    显示sql
+    statementExecutableSqlLogEnable: true
+#    decrypt=true启用加密，config.decrypt.key配置公钥。
+#    connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=500;config.decrypt=true;config.decrypt.key=${public-key}
+    connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000;
+#                          config.decrypt=true;config.decrypt.key=${public-key}
+#==========================================
+
+
+#==============mvc配置=====================
+  mvc:
+    view:
+      prefix: /page/
+      suffix: .html
+
+#==========================================
+
+
+#==============logger配置=====================
+logging:
+  file: sys_log.log
+  pattern:
+    file: "%d{yyyy-MM-dd HH:mm:ss} ${LOG_LEVEL_PATTERN:-%5p} ${PID:- } --- [%t] %-40.40logger{39} : %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}"
+  level:
+    com:
+      yxp423:
+        ssmempl:
+          mapper: debug
+
+
+#==========================================
